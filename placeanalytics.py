@@ -254,7 +254,17 @@ def app(df):
     #places = df['place.name'].unique()
     #select_plc = st.multiselect('Select the places you want to observe', places)
     #placeContainerCount(df, select_plc)
-    try:
-        containerStayDuration(df)
-    except:
-        st.warning('No data found for your selection!')
+    sub_menu = st.sidebar.selectbox(
+            "Select the Dashboard you would like to see",
+            ('Standzeiten', 'FiFo'), key='place_main'
+        )
+    if sub_menu == 'Standzeiten':
+        try:
+            containerStayDuration(df)
+        except:
+            st.warning('No data found for your selection!')
+    if sub_menu == 'FiFo':
+        try:
+            containerStayDuration(df)
+        except:
+            st.warning('No data found for your selection!')

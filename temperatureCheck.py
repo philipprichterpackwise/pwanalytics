@@ -76,8 +76,6 @@ def app(df):
         st.markdown('---')
         st.subheader('The complete Data to analyse as you wish')
         st.dataframe(addFilterToDataframe.filter_dataframe(complete_results_df, False, 1), use_container_width=True)
-
-
     else:
         st.write('No containers found that match the criteria.')
    

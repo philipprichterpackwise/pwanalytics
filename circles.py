@@ -252,233 +252,210 @@ def circlecalculation(df, containers, start_place, selected_places, slc_containe
 
 
 def app(df):
+    additional_place = None
+    container_types = None
+    start_place = None
+    circleAnalytics = None
+
+    unique_places = df['place.name'].unique()
+    containers = df['container.name'].unique()
     with st.sidebar:
-        menu = st.radio('Menu:',['Show Circle Analytics','Show Network Graph'])
-    if menu == 'Show Circle Analytics':
-        additional_place = None
-        container_types = None
-        start_place = None
-        circleAnalytics = None
+        start_place = st.selectbox('Select Start Place for calculating cycle', unique_places)
+        start_place_alone = start_place
+        additional_place = st.multiselect('Select addtional places which are in the cycle', unique_places)
+        output_place = additional_place
+        selected_places = additional_place
+        selected_places.append(start_place)
+        container_types = df['container.containerType.name'].unique()
+        slc_container_types = st.multiselect('Select the containertypes', container_types)
+        df = pd.DataFrame(df, columns=['timestamp', 'container.name', 'containerData.productName', 'place.name', 'fillingLevel.percent','fillingLevel.state', 'Date', 'container.containerType.name', 'location.coordinates'])
+        places_in_observation = [] 
+        specific_container = st.checkbox('I want to select specific containers (Default: All container)')
+        if specific_container:
+            containers = st.multiselect('Please select all containers you want in the calculation', containers)
+        st.markdown('---')
+    if start_place is not None and (len(additional_place) > 1) and (len(slc_container_types) != 0):
+        try:              
+            circleAnalytics = circlecalculation(df, containers, start_place, selected_places, slc_container_types, places_in_observation)
+        except:
+            st.warning(f'No fully completed cycle found between {start_place_alone} and {output_place}')
+    if circleAnalytics is not None:
+        df_circleAnalytics = circleAnalytics[0]
+        places_in_observation = circleAnalytics[1]
+        places_in_observation = list(set(places_in_observation))
+        containers_in_observation = circleAnalytics[5]
+        start_place = circleAnalytics[6]
+        longestCycle = df_circleAnalytics['Total Duration'].max()
+        shortesCycle = df_circleAnalytics['Total Duration'].min()
+        meanCycle = df_circleAnalytics['Total Duration'].mean()
+        meanCycle = meanCycle.astype('int')
+        circleAnalytics = pd.DataFrame(df_circleAnalytics)
 
-        unique_places = df['place.name'].unique()
-        containers = df['container.name'].unique()
-        with st.sidebar:
-            start_place = st.selectbox('Select Start Place for calculating cycle', unique_places)
-            start_place_alone = start_place
-            additional_place = st.multiselect('Select addtional places which are in the cycle', unique_places)
-            output_place = additional_place
-            selected_places = additional_place
-            selected_places.append(start_place)
-            container_types = df['container.containerType.name'].unique()
-            slc_container_types = st.multiselect('Select the containertypes', container_types)
-            df = pd.DataFrame(df, columns=['timestamp', 'container.name', 'containerData.productName', 'place.name', 'fillingLevel.percent','fillingLevel.state', 'Date', 'container.containerType.name', 'location.coordinates'])
-            places_in_observation = [] 
-            specific_container = st.checkbox('I want to select specific containers (Default: All container)')
-            if specific_container:
-                containers = st.multiselect('Please select all containers you want in the calculation', containers)
-            st.markdown('---')
-        if start_place is not None and (len(additional_place) > 1) and (len(slc_container_types) != 0):
-            try:              
-                circleAnalytics = circlecalculation(df, containers, start_place, selected_places, slc_container_types, places_in_observation)
-            except:
-                st.warning(f'No fully completed cycle found between {start_place_alone} and {output_place}')
-        if circleAnalytics is not None:
-            df_circleAnalytics = circleAnalytics[0]
-            places_in_observation = circleAnalytics[1]
-            places_in_observation = list(set(places_in_observation))
-            containers_in_observation = circleAnalytics[5]
-            start_place = circleAnalytics[6]
-            longestCycle = df_circleAnalytics['Total Duration'].max()
-            shortesCycle = df_circleAnalytics['Total Duration'].min()
-            meanCycle = df_circleAnalytics['Total Duration'].mean()
-            meanCycle = meanCycle.astype('int')
-            circleAnalytics = pd.DataFrame(df_circleAnalytics)
+        export_start = df['Date'].iloc[0]
+        export_start = pd.to_datetime(export_start)
+        export_start_str = export_start.strftime("%d-%m-%Y")
+        export_end = df['Date'].iloc[-1]
+        export_end = pd.to_datetime(export_end)
+        export_end_str = export_end.strftime("%d-%m-%Y")
 
-            export_start = df['Date'].iloc[0]
-            export_start = pd.to_datetime(export_start)
-            export_start_str = export_start.strftime("%d-%m-%Y")
-            export_end = df['Date'].iloc[-1]
-            export_end = pd.to_datetime(export_end)
-            export_end_str = export_end.strftime("%d-%m-%Y")
+        ### Overview
+        
+        if 'on Transport' in places_in_observation:
+            places_in_observation.remove('on Transport')
+        
+        places_in_observation.remove(start_place)
+        
+        # First KPI Row
+        a1, a2 = st.columns(2)
+        a1.metric('Export Start Time', export_start_str)
+        a2.metric('Export End Time', export_end_str)
 
-            ### Overview
-            
-            if 'on Transport' in places_in_observation:
-                places_in_observation.remove('on Transport')
-            
-            places_in_observation.remove(start_place)
-            
-            # First KPI Row
-            a1, a2 = st.columns(2)
-            a1.metric('Export Start Time', export_start_str)
-            a2.metric('Export End Time', export_end_str)
+        # Second KPI Row
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            col1.metric('Amount of containers in obversation', len(containers_in_observation))
+            with st.expander('Container in observation'):
+                st.dataframe(containers_in_observation, use_container_width=True)
 
-            # Second KPI Row
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                col1.metric('Amount of containers in obversation', len(containers_in_observation))
-                with st.expander('Container in observation'):
-                    st.dataframe(containers_in_observation, use_container_width=True)
+        with col2:
+            col2.metric('Amount of supplied places/customers', len(places_in_observation))
+            with st.expander('Places/Customers list'):
+                st.dataframe(places_in_observation, use_container_width=True)
 
-            with col2:
-                col2.metric('Amount of supplied places/customers', len(places_in_observation))
-                with st.expander('Places/Customers list'):
-                    st.dataframe(places_in_observation, use_container_width=True)
+        with col3:
+            col3.metric('Amount of containertypes in obversation', len(slc_container_types))  
+            with st.expander('Containertypes in observation'):
+                st.dataframe(slc_container_types, use_container_width=True)
 
-            with col3:
-                col3.metric('Amount of containertypes in obversation', len(slc_container_types))  
-                with st.expander('Containertypes in observation'):
-                    st.dataframe(slc_container_types, use_container_width=True)
+        # Third KPI row
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric('Amount of completed cycles', len(circleAnalytics))
+        c2.metric('Average duration of cycle', meanCycle)
+        c3.metric('Duration of longest Cycle', longestCycle, delta=int((meanCycle - longestCycle)))
+        c4.metric('Duration of shortest Cycle', shortesCycle, delta=int((meanCycle - shortesCycle)))
 
-            # Third KPI row
-            c1, c2, c3, c4 = st.columns(4)
-            c1.metric('Amount of completed cycles', len(circleAnalytics))
-            c2.metric('Average duration of cycle', meanCycle)
-            c3.metric('Duration of longest Cycle', longestCycle, delta=int((meanCycle - longestCycle)))
-            c4.metric('Duration of shortest Cycle', shortesCycle, delta=int((meanCycle - shortesCycle)))
+        st.subheader('Average Duration')
+        st.write('Overview of the average stay time as Days per state and per place')
+        columns = circleAnalytics.columns.tolist()[5:]
+        cities = round(circleAnalytics[columns].mean(), 1).to_frame().rename(columns={0: 'Avg Days'})
 
-            st.subheader('Average Duration')
-            st.write('Overview of the average stay time as Days per state and per place')
-            columns = circleAnalytics.columns.tolist()[5:]
-            cities = round(circleAnalytics[columns].mean(), 1).to_frame().rename(columns={0: 'Avg Days'})
+        # extract the city names from the index
+        cities = cities.reset_index()
+        # extract state information from 'index' column
+        cities['state'] = cities['index'].str.split(' ').str[-1]
+        # extract city information from 'index' column
+        cities['city'] = cities['index'].str.split(' ').str[2:-1].apply(lambda x: ' '.join(x))
+        cities.drop(['index'], axis=1, inplace=True)
 
-            # extract the city names from the index
-            cities = cities.reset_index()
-            # extract state information from 'index' column
-            cities['state'] = cities['index'].str.split(' ').str[-1]
-            # extract city information from 'index' column
-            cities['city'] = cities['index'].str.split(' ').str[2:-1].apply(lambda x: ' '.join(x))
-            cities.drop(['index'], axis=1, inplace=True)
+        fig = px.bar(cities, x="city", y="Avg Days", color="state", text="Avg Days")
+        fig.update_traces(texttemplate='%{text}', textposition='outside')
+        # Plot!
+        st.plotly_chart(fig, use_container_width=True)
 
-            fig = px.bar(cities, x="city", y="Avg Days", color="state", text="Avg Days")
-            fig.update_traces(texttemplate='%{text}', textposition='outside')
+        """ # Third KPI Chart
+        d3, d4 = st.columns(2)
+        with d3:
+            # Example data for 1 year
+            date_range = pd.date_range('2022-01-01', '2022-12-31')
+            data = pd.DataFrame({
+                'Full': np.random.randint(100, 200, len(date_range)),
+                'empty': np.random.randint(150, 250, len(date_range)),
+                'operative': np.random.randint(50, 100, len(date_range))
+            }, index=date_range)
+
+            # Create the Plotly line chart
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(x=data.index, y=data['Full'], name='Full'))
+            fig.add_trace(go.Scatter(x=data.index, y=data['empty'], name='empty'))
+            fig.add_trace(go.Scatter(x=data.index, y=data['operative'], name='operative'))
+
+            # Update the layout of the chart
+            fig.update_layout(
+                title='Example Time Series Data for 1 Year',
+                xaxis_title='Date',
+                yaxis_title='Values',
+                legend_title='Status'
+            )
             # Plot!
             st.plotly_chart(fig, use_container_width=True)
+        with d4:
+            df = px.data.gapminder().query("year==2007")
+            fig = px.scatter_geo(df, locations="iso_alpha", color="continent",
+                                hover_name="country", size="pop",
+                                projection="winkel3")
+            st.plotly_chart(fig, use_container_width=True) """
 
-            """ # Third KPI Chart
-            d3, d4 = st.columns(2)
-            with d3:
-                # Example data for 1 year
-                date_range = pd.date_range('2022-01-01', '2022-12-31')
-                data = pd.DataFrame({
-                    'Full': np.random.randint(100, 200, len(date_range)),
-                    'empty': np.random.randint(150, 250, len(date_range)),
-                    'operative': np.random.randint(50, 100, len(date_range))
-                }, index=date_range)
+        st.subheader('Filter Dataframe')
+        st.write('You also have the option to filter the dataframe as you like')
+        st.dataframe(addFilterToDataframe.filter_dataframe(circleAnalytics, True, 4), height=700)
+        st.markdown('---')
 
-                # Create the Plotly line chart
-                fig = go.Figure()
-                fig.add_trace(go.Scatter(x=data.index, y=data['Full'], name='Full'))
-                fig.add_trace(go.Scatter(x=data.index, y=data['empty'], name='empty'))
-                fig.add_trace(go.Scatter(x=data.index, y=data['operative'], name='operative'))
+        ####Summary
+        st.header('Summary & Explaination')
+        t1,t2 = st.columns(2)
+        with t1:
+            st.subheader('Best possible cycle')
+            st.text('Best theoretical possible cycle based on the minimum of all columns')
+        with t2:
+            st.subheader('Worst possible cycle')
+            st.text('Worst theoretical possible cycle based on the maximum of all columns')
+        st.markdown('---')
+        ##Min Cycle
+        min_cycle = df_circleAnalytics[df_circleAnalytics['Total Duration']==df_circleAnalytics['Total Duration'].min()]
+        min_json = min_cycle
+        ##Max Cycle
+        max_cycle = df_circleAnalytics[df_circleAnalytics['Total Duration']==df_circleAnalytics['Total Duration'].max()]
 
-                # Update the layout of the chart
-                fig.update_layout(
-                    title='Example Time Series Data for 1 Year',
-                    xaxis_title='Date',
-                    yaxis_title='Values',
-                    legend_title='Status'
-                )
-                # Plot!
-                st.plotly_chart(fig, use_container_width=True)
-            with d4:
-                df = px.data.gapminder().query("year==2007")
-                fig = px.scatter_geo(df, locations="iso_alpha", color="continent",
-                                    hover_name="country", size="pop",
-                                    projection="winkel3")
-                st.plotly_chart(fig, use_container_width=True) """
+        ##Paradies DF
+        min_vals = df_circleAnalytics.min()
+        paradies_df = pd.DataFrame(min_vals).transpose()
+        paradies_df = paradies_df.drop(columns=['startdate', 'enddate', 'container.name', 'circle', 'Total Duration']).reset_index(drop=True)
+        sum_val_para = paradies_df.sum(axis=1)
+        paradies_df.insert(0, 'Total Duration', sum_val_para)
+        paradies_df['Total Duration'] = paradies_df['Total Duration'].astype('int')
+        ###Hell Df
+        max_vals = df_circleAnalytics.max()
+        hell_df = pd.DataFrame(max_vals).transpose()
+        hell_df = hell_df.drop(columns=['startdate', 'enddate', 'container.name', 'circle', 'Total Duration']).reset_index(drop=True)
+        sum_val_hell = hell_df.sum(axis=1)
+        hell_df.insert(0, 'Total Duration', sum_val_hell)
+        hell_df['Total Duration'] = hell_df['Total Duration'].astype('int')
 
-            st.subheader('Filter Dataframe')
-            st.write('You also have the option to filter the dataframe as you like')
-            st.dataframe(addFilterToDataframe.filter_dataframe(circleAnalytics, True, 4), height=700)
-            st.markdown('---')
-
-            ####Summary
-            st.header('Summary & Explaination')
-            t1,t2 = st.columns(2)
-            with t1:
-                st.subheader('Best possible cycle')
-                st.text('Best theoretical possible cycle based on the minimum of all columns')
-            with t2:
-                st.subheader('Worst possible cycle')
-                st.text('Worst theoretical possible cycle based on the maximum of all columns')
-            st.markdown('---')
-            ##Min Cycle
-            min_cycle = df_circleAnalytics[df_circleAnalytics['Total Duration']==df_circleAnalytics['Total Duration'].min()]
-            min_json = min_cycle
-            ##Max Cycle
-            max_cycle = df_circleAnalytics[df_circleAnalytics['Total Duration']==df_circleAnalytics['Total Duration'].max()]
-
-            ##Paradies DF
-            min_vals = df_circleAnalytics.min()
-            paradies_df = pd.DataFrame(min_vals).transpose()
-            paradies_df = paradies_df.drop(columns=['startdate', 'enddate', 'container.name', 'circle', 'Total Duration']).reset_index(drop=True)
-            sum_val_para = paradies_df.sum(axis=1)
-            paradies_df.insert(0, 'Total Duration', sum_val_para)
-            paradies_df['Total Duration'] = paradies_df['Total Duration'].astype('int')
-            ###Hell Df
-            max_vals = df_circleAnalytics.max()
-            hell_df = pd.DataFrame(max_vals).transpose()
-            hell_df = hell_df.drop(columns=['startdate', 'enddate', 'container.name', 'circle', 'Total Duration']).reset_index(drop=True)
-            sum_val_hell = hell_df.sum(axis=1)
-            hell_df.insert(0, 'Total Duration', sum_val_hell)
-            hell_df['Total Duration'] = hell_df['Total Duration'].astype('int')
-
-            ###Average Cycle
-            cols = df_circleAnalytics.columns[3:]
-            avg_vals = df_circleAnalytics[cols].mean()
-            avg_df = pd.DataFrame(avg_vals).transpose()
-            avg_df = avg_df.drop(columns=['circle', 'Total Duration']).reset_index(drop=True)
-            sum_val_avg = avg_df.sum(axis=1)
-            avg_df.insert(0, 'Total Duration', sum_val_avg)
+        ###Average Cycle
+        cols = df_circleAnalytics.columns[3:]
+        avg_vals = df_circleAnalytics[cols].mean()
+        avg_df = pd.DataFrame(avg_vals).transpose()
+        avg_df = avg_df.drop(columns=['circle', 'Total Duration']).reset_index(drop=True)
+        sum_val_avg = avg_df.sum(axis=1)
+        avg_df.insert(0, 'Total Duration', sum_val_avg)
 
 
-            ###Chart noch darstellen, um potential aufzuzeigen
-            compare_df = pd.DataFrame()
-            min_cycle = min_cycle.drop(columns=['startdate', 'enddate', 'container.name', 'circle'])
-            max_cycle = max_cycle.drop(columns=['startdate', 'enddate', 'container.name', 'circle'])
-            compare_df = pd.concat([paradies_df,min_cycle,avg_df,max_cycle.head(1),hell_df])
-            # repeating the list to match DataFrame's length
-            cycle_scenarios = ['best possible cycle', 'min cycle', 'avg. Cycle', 'max cycle', 'worst possible cycle'] * len(compare_df)
+        ###Chart noch darstellen, um potential aufzuzeigen
+        compare_df = pd.DataFrame()
+        min_cycle = min_cycle.drop(columns=['startdate', 'enddate', 'container.name', 'circle'])
+        max_cycle = max_cycle.drop(columns=['startdate', 'enddate', 'container.name', 'circle'])
+        compare_df = pd.concat([paradies_df,min_cycle,avg_df,max_cycle.head(1),hell_df])
+        # repeating the list to match DataFrame's length
+        cycle_scenarios = ['best possible cycle', 'min cycle', 'avg. Cycle', 'max cycle', 'worst possible cycle'] * len(compare_df)
 
-            # truncating the list to match DataFrame's length
-            cycle_scenarios = cycle_scenarios[:len(compare_df)]
+        # truncating the list to match DataFrame's length
+        cycle_scenarios = cycle_scenarios[:len(compare_df)]
 
-            # inserting the column
-            compare_df.insert(0, 'Cycle Scenario', cycle_scenarios)
-            compare_df.reset_index(inplace=True, drop=True)
-            
-            for c in compare_df.columns:
-                try:
-                    compare_df[[c]] = compare_df[[c]].astype(np.float64).apply(np.int16)
-                    #allContainer_circle_fillstate[[i]] = allContainer_circle_fillstate[[i]].astype('int')
-                except:
-                    pass
-            st.subheader('Overview Summary')
-            st.dataframe(compare_df)
-            compare_df_ohne_total = compare_df.drop(columns=['Total Duration'])
+        # inserting the column
+        compare_df.insert(0, 'Cycle Scenario', cycle_scenarios)
+        compare_df.reset_index(inplace=True, drop=True)
+        
+        for c in compare_df.columns:
+            try:
+                compare_df[[c]] = compare_df[[c]].astype(np.float64).apply(np.int16)
+                #allContainer_circle_fillstate[[i]] = allContainer_circle_fillstate[[i]].astype('int')
+            except:
+                pass
+        st.subheader('Overview Summary')
+        st.dataframe(compare_df)
+        compare_df_ohne_total = compare_df.drop(columns=['Total Duration'])
 
-            # Create the plot
-            fig_Circles = px.bar(compare_df_ohne_total, y='Cycle Scenario', x=compare_df_ohne_total.columns) 
-            fig_Circles.update_layout(xaxis_title='Duration at place')
-            st.plotly_chart(fig_Circles, use_container_width=True)   
-
-    if menu == 'Show Network Graph':
-        # Create a network graph
-        G = nx.DiGraph()
-
-        # Add nodes for each place
-        places = df['place.name'].unique()
-        for place in places:
-            G.add_node(place)
-
-        # Add edges for each container route
-        routes = df.groupby('container.name')['place.name'].apply(list)
-        for route in routes:
-            for i in range(len(route)-1):
-                G.add_edge(route[i], route[i+1])
-
-        # Plot the graph
-        fig, ax = plt.subplots()
-        nx.draw(G, with_labels=True, ax=ax)
-        st.pyplot(fig)
+        # Create the plot
+        fig_Circles = px.bar(compare_df_ohne_total, y='Cycle Scenario', x=compare_df_ohne_total.columns) 
+        fig_Circles.update_layout(xaxis_title='Duration at place')
+        st.plotly_chart(fig_Circles, use_container_width=True)   

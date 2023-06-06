@@ -6,6 +6,7 @@ import altair as alt
 import json
 import requests
 from streamlit_lottie import st_lottie
+from streamlit_option_menu import option_menu
 
 
 #### Sub-Pages Import
@@ -14,7 +15,7 @@ import circles
 import relevantColumns
 import placeanalytics
 import temperatureCheck
-import consumption_test
+import product_analytics
 import containerObservation
 import checkPermission
 
@@ -23,6 +24,14 @@ st.set_page_config(
     layout="wide"
 )
 
+product_menu = ["Consumption Analytics", "Storage range"]
+logistic_menu = ["Container Downtimes", "FiFo"]
+cycle_menu = ["Cycle Analytics"]
+container_menu = ["Temperature", "Cycle Counter", "Container TÜV ADR"]
+dosage_menu = ["Dosage Analytics"]
+home_menu = ["Homepage", "FAQ"]
+
+
 def read_data(file_path):
     relevant_cols = relevantColumns.relevant_columns
     # Read the data in chunks
@@ -30,17 +39,6 @@ def read_data(file_path):
     for chunk in pd.read_csv(file_path, chunksize=100000, sep=",", encoding='utf-8', on_bad_lines='skip', usecols=relevant_cols):
         chunks.append(chunk)
     df = pd.concat(chunks)
-    return df
-
-def generate_meaningful_name():
-    fake = Faker()
-    return fake.name()
-
-def anonymize_container_names(df):
-    unique_names = df['container.name'].unique()
-    anonymized_names = [generate_meaningful_name() for _ in range(len(unique_names))]
-    mapping = dict(zip(unique_names, anonymized_names))
-    df['container.name'] = df['container.name'].map(mapping)
     return df
 
 #### relevant functions
@@ -80,16 +78,37 @@ df = fileUpload()
 export_start = df['Date'].head(1).reset_index(drop=True)[0]
 export_end = df['Date'].tail(1).reset_index(drop=True)[0]
 
+# 3. CSS style definitions
+#a1, a2 = st.columns(2)
+main_menu= option_menu("Main Menu", ["Home Dashboard", "Product Dashboard", "Logistic Dashboard", "Cycle Dashboard", "Container Dashboard", "Dosage Dashboard"],
+    icons=['house', 'cup-hot', "truck", 'recycle', 'box-seam', 'eyedropper'], 
+    menu_icon="cast", default_index=0, orientation="horizontal",
+)
+
+if main_menu == "Product Dashboard":
+    sub_menu_list = product_menu
+elif main_menu == "Logistic Dashboard":
+    sub_menu_list = logistic_menu
+elif main_menu == "Cycle Dashboard":
+    sub_menu_list = cycle_menu
+elif main_menu == "Container Dashboard":
+    sub_menu_list = container_menu
+elif main_menu == "Dosage Dashboard":
+    sub_menu_list = dosage_menu
+elif main_menu == "Home Dashboard":
+    sub_menu_list = home_menu
+
 with st.sidebar:
     st.sidebar.title('Container Analytics')
     st.write('Provided by')
     st.write("""<figure><embed type="image/svg+xml" src="https://www.packwise.de/hubfs/packwise_klein-farbe.svg" /></figure>""", unsafe_allow_html=True)
     st.markdown('---')
     st.subheader('Please select a date range for your Dashboard')
-    a1, a2 = st.columns(2)
-    with a1:
+    st.markdown('---')
+    b1, b2 = st.columns(2)
+    with b1:
         user_start_date = st.date_input(label='Start date', key='start', value=export_start ,min_value=export_start, max_value=export_end)
-    with a2:
+    with b2:
         user_end_date = st.date_input(label='End date', key='end', value=export_end, min_value=export_start, max_value=export_end)
         
     # Convert 'Date' column to datetime if it isn't already
@@ -102,25 +121,58 @@ with st.sidebar:
     # Filter rows between user_start_date and user_end_date
     df = df[(df['Date'] >= user_start_date) & (df['Date'] <= user_end_date)]
     c = st.container()
-    menu = st.sidebar.selectbox(
-        "Select the Dashboard you would like to see",
-        ('Cycle Analytics', 'Places Analytics', 'Temperature Analytics', 'Consumption Analytics', 'Container Observation')
-    )
-st.title('Welcome to your Analytics Dashboard')
-st.subheader(f'Current Selection: {menu}')
+
+    # 1. as sidebar menu
+    sub_menu = option_menu(main_menu, 
+                        sub_menu_list,
+                        menu_icon="cast", default_index=0)
+
+st.title(f'Welcome to your {main_menu}')
+st.subheader(f'Current Selection: {sub_menu}')
 st.markdown('---')
 
-if menu == 'Places Analytics':
+#Home Section
+if sub_menu == 'Home':
+    st.title('Homepage')
+    st.write('Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.')
+
+if sub_menu == 'FAQ':
+    st.title('FAQ')
+    st.write('Lorem ipsum ')
+
+#Product Section
+if sub_menu == 'Consumption Analytics':
+    product_analytics.app(df)
+
+if sub_menu == 'Storage range':
+    st.write('Storage')
+    
+#Logistic Section
+if sub_menu == 'Container Downtimes':
     placeanalytics.app(df)
 
-if menu == 'Cycle Analytics':
+if sub_menu == 'Storage range':
+    st.write('Storage')
+
+if sub_menu == 'FiFo':
+    st.write('test')
+
+#Cycle Dashboard
+if sub_menu == 'Cycle Analytics':
     circles.app(df)
 
-if menu == 'Temperature Analytics':
+#Container Dashboard
+if sub_menu == 'Temperature':
     temperatureCheck.app(df)
 
-if menu == 'Consumption Analytics':
-    consumption_test.app(df)
+if sub_menu == 'Cycle Counter':
+    st.write('Cycle')
 
-if menu == 'Container Observation':
-    containerObservation.app(df)
+if sub_menu == 'Container TÜV ADR':
+    st.write('Hier Ihre neue TÜV Plakette!')
+
+#Dosage Dashboard
+if sub_menu == 'Dosage Analytics':
+    st.write('Dosierkontrole')
+
+
