@@ -1,0 +1,114 @@
+/* Centering text in each gray box */
+div.css-keje6w.e1tzin5v2, 
+div.element-container.css-11aqfwc.e1tzin5v3,
+div.element-container.css-fozgsz.e1tzin5v3,
+div.element-container.css-fozgsz.e1tzin5v2,
+div.css-1f36uq3.e1tzin5v0,
+div.css-1wivap2.e16fv1kl3,
+div.css-10trblm.e16nr0p30,
+div.css-1sslkv8.e16nr0p34 p,
+div.css-10trblm.e16nr0p30,
+div.css-zt5igj.e16nr0p33,
+div.css-1sslkv8.e16nr0p34,
+div.css-1v0mbdj.etr89bj1,
+div.css-1kyxreq.etr89bj2,
+div.css-uvn0xz.e16nr0p34,
+div.element-container.css-1enwn3o.e1tzin5v2,
+h3{
+    text-align: center;
+    justify-content: center;
+}
+  
+/* 1. KPI Row  */
+div.css-keje6w.e1tzin5v2 {
+    background-color: #e5e9f2;
+    text-align: center;
+    border-radius: 10px;
+    padding: 2%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.24);
+    transition: all 0.5s ease;
+}
+
+div.css-keje6w.e1tzin5v2:hover {
+    cursor: pointer;
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.19),
+      0px 10px 20px rgba(0, 0, 0, 0.23);
+    transform: translateY(-5%);
+}
+
+/* 2. KPI Row  */
+div.css-1r6slb0.e1tzin5v2 {
+    background-color: #e5e9f2;
+    text-align: center;
+    border-radius: 10px;
+    padding: 2%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.24);
+    transition: all 0.5s ease;
+}
+div.css-1r6slb0.e1tzin5v2:hover {
+    cursor: pointer;
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.19),
+      0px 10px 20px rgba(0, 0, 0, 0.23);
+    transform: translateY(-5%);
+}
+/* 3. KPI Row  */
+div.css-12w0qpk.e1tzin5v2 {
+    background-color: #e5e9f2;
+    text-align: center;
+    border-radius: 10px;
+    padding: 2%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.24);
+    transition: all 0.5s ease;
+}
+div.css-12w0qpk.e1tzin5v2:hover {
+    cursor: pointer;
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.19),
+      0px 10px 20px rgba(0, 0, 0, 0.23);
+    transform: translateY(-5%);
+}
+/* 3. KPI Row  */
+div.css-keje6w.e1tzin5v1 {
+    background-color: #e5e9f2;
+    text-align: center;
+    border-radius: 10px;
+    padding: 2%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.24);
+    transition: all 0.5s ease;
+}
+div.css-keje6w.e1tzin5v1:hover {
+    cursor: pointer;
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.19),
+      0px 10px 20px rgba(0, 0, 0, 0.23);
+    transform: translateY(-5%);
+}
+/* 3. KPI Row  */
+div.css-12w0qpk.e1tzin5v1 {
+    background-color: #e5e9f2;
+    text-align: center;
+    border-radius: 10px;
+    padding: 2%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.24);
+    transition: all 0.5s ease;
+}
+div.css-12w0qpk.e1tzin5v1:hover {
+    cursor: pointer;
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.19),
+      0px 10px 20px rgba(0, 0, 0, 0.23);
+    transform: translateY(-5%);
+}
+/* 3. KPI Row  */
+div.css-1r6slb0.e1tzin5v1 {
+    background-color: #e5e9f2;
+    text-align: center;
+    border-radius: 10px;
+    padding: 2%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.24);
+    transition: all 0.5s ease;
+}
+div.css-1r6slb0.e1tzin5v1:hover {
+    cursor: pointer;
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.19),
+      0px 10px 20px rgba(0, 0, 0, 0.23);
+    transform: translateY(-5%);
+}
+

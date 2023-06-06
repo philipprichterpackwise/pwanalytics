@@ -1,0 +1,11 @@
+[server]
+maxUploadSize = 2048
+[theme]
+primaryColor="#3693E2"
+backgroundColor="#f2f4f9"
+secondaryBackgroundColor="#e5e9f2"
+textColor="black"
+# font="Geramond"
+[global]
+showWarningOnDirectExecution = false
+

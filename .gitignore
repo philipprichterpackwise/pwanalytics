@@ -1,0 +1,11 @@
+**/.vscode
+
+**/_archive
+**/__pycache__
+startUp.bat
+snippets.py
+forecast_keep_file.py
+cycle_analytics_data.json
+consumption_analytics_data.json
+place_analytics_data.json
+.streamlit/secrets.toml
