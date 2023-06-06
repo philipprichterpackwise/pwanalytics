@@ -73,17 +73,28 @@ def load_lottieurl(url :str):
 with open ('style.css') as f:
     st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
-
 df = fileUpload()
 export_start = df['Date'].head(1).reset_index(drop=True)[0]
 export_end = df['Date'].tail(1).reset_index(drop=True)[0]
 
-# 3. CSS style definitions
-#a1, a2 = st.columns(2)
-main_menu= option_menu("Main Menu", ["Home Dashboard", "Product Dashboard", "Logistic Dashboard", "Cycle Dashboard", "Container Dashboard", "Dosage Dashboard"],
+st.write("""<figure><embed type="image/svg+xml" src="https://www.packwise.de/hubfs/packwise_klein-farbe.svg" /></figure>""", unsafe_allow_html=True)
+
+st.markdown('---')
+st.subheader('Main Menu')
+main_menu= option_menu(None, ["Home Dashboard", "Product Dashboard", "Logistic Dashboard", "Cycle Dashboard", "Container Dashboard", "Dosage Dashboard"],
     icons=['house', 'cup-hot', "truck", 'recycle', 'box-seam', 'eyedropper'], 
     menu_icon="cast", default_index=0, orientation="horizontal",
 )
+cols1, cols2, cols3 = st.columns([2,1,2])
+with cols2:
+    st.subheader('Please select a date range for your Dashboard')
+    b1, b2 = st.columns(2)
+    with b1:
+        user_start_date = st.date_input(label='Start date', key='start', value=export_start ,min_value=export_start, max_value=export_end)
+    with b2:
+        user_end_date = st.date_input(label='End date', key='end', value=export_end, min_value=export_start, max_value=export_end)
+    
+st.markdown('---')
 
 if main_menu == "Product Dashboard":
     sub_menu_list = product_menu
@@ -103,13 +114,6 @@ with st.sidebar:
     st.write('Provided by')
     st.write("""<figure><embed type="image/svg+xml" src="https://www.packwise.de/hubfs/packwise_klein-farbe.svg" /></figure>""", unsafe_allow_html=True)
     st.markdown('---')
-    st.subheader('Please select a date range for your Dashboard')
-    st.markdown('---')
-    b1, b2 = st.columns(2)
-    with b1:
-        user_start_date = st.date_input(label='Start date', key='start', value=export_start ,min_value=export_start, max_value=export_end)
-    with b2:
-        user_end_date = st.date_input(label='End date', key='end', value=export_end, min_value=export_start, max_value=export_end)
         
     # Convert 'Date' column to datetime if it isn't already
     df['Date'] = pd.to_datetime(df['Date'])
@@ -129,7 +133,6 @@ with st.sidebar:
 
 st.title(f'Welcome to your {main_menu}')
 st.subheader(f'Current Selection: {sub_menu}')
-st.markdown('---')
 
 #Home Section
 if sub_menu == 'Home':

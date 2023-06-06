@@ -407,14 +407,14 @@ def app(df):
         max_cycle = df_circleAnalytics[df_circleAnalytics['Total Duration']==df_circleAnalytics['Total Duration'].max()]
 
         ##Paradies DF
-        min_vals = df_circleAnalytics.min()
+        min_vals = df_circleAnalytics[df_circleAnalytics['Total Duration'] == df_circleAnalytics['Total Duration'].min()].reset_index(drop=True)
         paradies_df = pd.DataFrame(min_vals).transpose()
         paradies_df = paradies_df.drop(columns=['startdate', 'enddate', 'container.name', 'circle', 'Total Duration']).reset_index(drop=True)
         sum_val_para = paradies_df.sum(axis=1)
         paradies_df.insert(0, 'Total Duration', sum_val_para)
         paradies_df['Total Duration'] = paradies_df['Total Duration'].astype('int')
         ###Hell Df
-        max_vals = df_circleAnalytics.max()
+        max_vals = df_circleAnalytics['Total Duration'].max()
         hell_df = pd.DataFrame(max_vals).transpose()
         hell_df = hell_df.drop(columns=['startdate', 'enddate', 'container.name', 'circle', 'Total Duration']).reset_index(drop=True)
         sum_val_hell = hell_df.sum(axis=1)
